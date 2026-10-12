@@ -1,0 +1,64 @@
+.upload {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    min-height: 140px;
+    padding: 1rem;
+    margin: 0 0 1.5rem;
+    text-align: center;
+    background-color: #f8f9fa;
+    border: 2px dashed #6c757d;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.upload .upload-titre {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.upload .upload-details {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem 1rem;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.upload .upload-details span strong {
+    color: #212529;
+}
+
+.upload.dragover {
+    background-color: #e9ecef;
+    border-color: #0d6efd;
+    border-style: solid;
+}
+
+
+
+#lesCartes .card {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+
+#lesCartes .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+}
+
+
+#lesCartes .card-header .btn-danger,
+#lesCartes .card-header button {
+    cursor: pointer;
+}

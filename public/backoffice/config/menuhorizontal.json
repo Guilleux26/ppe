@@ -1,0 +1,18 @@
+ [
+    {
+      "label": "Administrateur",
+      "href": "/backoffice/administrateur"
+    },
+    {
+      "label": "Module",
+      "href": "/backoffice/fonction"
+    },
+    {
+      "label": "Droit",
+      "href": "/backoffice/droit"
+    },
+    {
+      "label": "Déconnexion",
+      "href": "/backoffice/deconnexion.php"
+    }
+  ]
