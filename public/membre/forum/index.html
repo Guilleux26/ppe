@@ -1,0 +1,69 @@
+<div class="forum-admin">
+    <header class="forum-admin__header">
+        <div>
+            <p class="forum-admin__eyebrow">Espace d'administration</p>
+            <h1>Forum des membres</h1>
+            <p class="forum-admin__intro">
+                Suivez les discussions, archivez-les manuellement ou laissez leur auteur
+                les clôturer lorsqu'une réponse lui convient.
+            </p>
+        </div>
+        <div class="forum-admin__stats" aria-label="État du forum">
+            <div class="forum-stat">
+                <span class="forum-stat__number" id="openCount">0</span>
+                <span class="forum-stat__label">discussions ouvertes</span>
+            </div>
+            <div class="forum-stat forum-stat--archived">
+                <span class="forum-stat__number" id="archivedCount">0</span>
+                <span class="forum-stat__label">dans l'historique</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="forum-admin__notice" role="note">
+        <span class="forum-admin__notice-icon" aria-hidden="true">✓</span>
+        <span>
+            Une discussion est archivée automatiquement quand son auteur indique que
+            la réponse l'a satisfait. Vous pouvez aussi l'archiver ou la restaurer ici.
+        </span>
+    </div>
+
+    <div class="forum-admin__grid">
+        <section class="forum-panel" aria-labelledby="openTitle">
+            <div class="forum-panel__heading">
+                <div>
+                    <h2 id="openTitle">Discussions en cours</h2>
+                    <p>Les sujets encore ouverts aux réponses</p>
+                </div>
+                <span class="forum-panel__count" id="openPanelCount">0</span>
+            </div>
+            <div class="forum-list" id="openQuestions"></div>
+            <p class="forum-empty" id="openEmpty" hidden>Aucune discussion en cours.</p>
+        </section>
+
+        <aside class="forum-panel forum-panel--history" aria-labelledby="historyTitle">
+            <div class="forum-panel__heading">
+                <div>
+                    <h2 id="historyTitle">Historique des questions</h2>
+                    <p>Retrouvez et restaurez une discussion archivée</p>
+                </div>
+            </div>
+            <div class="forum-history-tools">
+                <label class="visually-hidden" for="historyFilter">Filtrer les archives</label>
+                <select id="historyFilter">
+                    <option value="all">Toutes les archives</option>
+                    <option value="admin">Archivée par l'administration</option>
+                    <option value="satisfaction">Réponse satisfaisante</option>
+                </select>
+                <label class="forum-search">
+                    <span class="visually-hidden">Rechercher une question archivée</span>
+                    <input id="historySearch" type="search" placeholder="Rechercher une question…">
+                    <span aria-hidden="true">⌕</span>
+                </label>
+            </div>
+            <div class="forum-list forum-list--history" id="archivedQuestions"></div>
+            <p class="forum-empty" id="historyEmpty" hidden>Aucune archive ne correspond à votre recherche.</p>
+        </aside>
+    </div>
+    <div class="forum-toast" id="forumToast" role="status" aria-live="polite"></div>
+</div>
