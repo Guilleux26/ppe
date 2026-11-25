@@ -23,7 +23,6 @@ function afficher() {
         let tr = lesLignes.insertRow();
         let td = tr.insertCell();
         td.innerText = membre.login;
-        td.classList.add('masquer');
         tr.insertCell().innerText = membre.nom + ' ' + membre.prenom;
         tr.insertCell().innerText = membre.email;
         td = tr.insertCell();
@@ -38,9 +37,6 @@ function afficher() {
     }
 }
 
-// -----------------------------------------------------------------------------------
-// Programme principal
-// -----------------------------------------------------------------------------------
 activerTri({
     idTable: "leTableau",
     getData: () => data,

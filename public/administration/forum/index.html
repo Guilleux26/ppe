@@ -1,0 +1,29 @@
+<div class="member-forum forum-management">
+    <header class="member-forum__header">
+        <div>
+            <p class="member-forum__eyebrow">Espace d'administration</p>
+            <h1>Gestion du forum</h1>
+            <p>Archivez les anciennes discussions ou supprimez les sujets qui n'ont plus leur place.</p>
+        </div>
+        <span class="member-forum__header-icon" aria-hidden="true">⚙</span>
+    </header>
+
+    <div class="forum-management__tools">
+        <label>
+            <span>Afficher</span>
+            <select id="forumFilter">
+                <option value="all">Toutes les discussions</option>
+                <option value="open">Discussions ouvertes</option>
+                <option value="archived">Discussions archivées</option>
+            </select>
+        </label>
+        <label>
+            <span>Rechercher</span>
+            <input id="forumSearch" type="search" placeholder="Titre, membre ou contenu">
+        </label>
+    </div>
+
+    <div id="adminDiscussionList" class="member-forum__list"></div>
+    <p id="adminDiscussionEmpty" class="member-forum__empty" hidden>Aucune discussion ne correspond à ces critères.</p>
+    <div id="msg" class="member-forum__message" role="status" aria-live="polite"></div>
+</div>

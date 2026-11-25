@@ -1,0 +1,35 @@
+.forum-management__tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 15px 0;
+}
+
+.forum-management__tools label {
+    display: grid;
+    flex: 1 1 230px;
+    gap: 5px;
+    color: #315877;
+    font-size: .84rem;
+    font-weight: 700;
+}
+
+.forum-management__tools select,
+.forum-management__tools input {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    color: #203f5c;
+    background: #fff;
+    border: 1px solid #c5d9eb;
+    border-radius: 6px;
+    font: inherit;
+    font-size: .88rem;
+}
+
+.forum-management button:focus-visible,
+.forum-management select:focus-visible,
+.forum-management input:focus-visible {
+    outline: 3px solid #76c7ff;
+    outline-offset: 2px;
+}

@@ -18,5 +18,5 @@ create database ppe
 -- 5. répertoire admministrateur
 -- 6. répertoire droit
 -- 7. répertoire resultat (un seul scriptresultat.slq pour les 3 tables)
-
+-- 8. répertoire forum (après la création de la table membre)
 

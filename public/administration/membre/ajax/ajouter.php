@@ -11,6 +11,10 @@ require $_SERVER['DOCUMENT_ROOT'] . '/../bootstrap/bootstrap.php';
 // Vérification d'un appel AJAX par la méthode POST sécurisé par un jeton
 Requete::exigerPost();
 
+if (Requete::postString('action') !== 'ajouter') {
+    ReponseJson::envoyerErreur("L'action demandée n'est pas reconnue.");
+}
+
 // récupération des données transmises
 $columns = Requete::postArray('columns');
 

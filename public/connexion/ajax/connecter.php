@@ -16,7 +16,7 @@ $login = Requete::postString('login');
 $password = Requete::postString('password');
 
 // vérification du login
-if (!preg_match('/^[a-zA-Z]{2,}$/', $login)) {
+if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]{1,49}$/', $login)) {
     throw new UserException('Nom d’utilisateur et/ou mot de passe incorrect.');
 } else {
     $membre = Membre::getByLogin($login);
@@ -43,4 +43,3 @@ if(isset($_SESSION['url'])) {
 
 $reponse = ['success' => $url];
 echo json_encode($reponse, JSON_UNESCAPED_UNICODE);
-

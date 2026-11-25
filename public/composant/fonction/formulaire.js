@@ -2,8 +2,8 @@
 
 'use strict';
 
-// Version 2026.5
-// Date version : 03/10/2026
+// Version 2026.6
+// Date version : 27/10/2026
 
 // Import de fonctions utilitaires depuis un module externe
 
@@ -162,17 +162,18 @@ export function configurerFormulaire() {
         bouton.type = 'button';
     }
 
-    // 2. Uniformisation du bouton d'ajout en CSS pur
-    const btnAjouter = document.getElementById('btnAjouter');
-    if (btnAjouter) {
-        btnAjouter.style.display = 'block';
-        btnAjouter.style.width = '100%';
-        btnAjouter.style.backgroundColor = '#dc3545'; // Rouge
-        btnAjouter.style.color = '#ffffff';          // Texte blanc
-        btnAjouter.style.border = 'none';
-        btnAjouter.style.borderRadius = '0.375rem';  // Arrondi (6px)
-        btnAjouter.style.padding = '0.5rem 1rem';    // Espacement interne
-        btnAjouter.style.cursor = 'pointer';
+    // 2. Uniformisation de TOUS les boutons dont l'id commence par "btn"
+    const boutonsAction = document.querySelectorAll('button[id^="btn"], a[id^="btn"].btn');
+    for (const btn of boutonsAction) {
+        btn.style.display = 'block';
+        btn.style.width = '100%';
+        btn.style.backgroundColor = '#dc3545'; // Rouge (ou tu peux adapter selon le rôle)
+        btn.style.color = '#ffffff';          // Texte blanc
+        btn.style.border = 'none';
+        btn.style.borderRadius = '0.375rem';  // Arrondi (6px)
+        btn.style.padding = '0.5rem 1rem';    // Espacement interne
+        btn.style.cursor = 'pointer';
+        btn.style.textAlign = 'center';       // Utile si c'est un lien <a> stylisé en bouton
     }
 
     // 3. Transformation automatique des conteneurs .groupe-fichier s'ils existent dans le HTML
@@ -372,7 +373,7 @@ export function effacerLesErreurs(zone = document) {
     }
     const msg = document.getElementById('msg');
     if (msg) {
-        msg.innerHTML = '';
+        msg.replaceChildren();
     }
 }
 

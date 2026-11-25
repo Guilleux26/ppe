@@ -48,6 +48,7 @@ function ajouter() {
     appelAjax({
         url : 'ajax/ajouter.php',
         data : {
+            action: 'ajouter',
             columns: {
                 nom: nom.value,
                 prenom: prenom.value,

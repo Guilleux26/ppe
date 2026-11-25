@@ -12,5 +12,3 @@ $page = new Page();
 $page->setTitre("Liste des membres")
     ->setDonnee('lesMembres', Membre::getAll())
     ->afficher();
-
-

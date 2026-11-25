@@ -1,262 +1,238 @@
 "use strict";
 
-const storageKey = "ppe.forum.admin.questions";
-const initialQuestions = [
-    {
-        id: 1,
-        author: "LucasR",
-        date: "30/09/2026 à 14:23",
-        title: "Recherche partenaire pour le 10km",
-        body: "Salut à tous, je cherche un partenaire pour le 10km de la semaine prochaine. Quelqu'un est motivé ? Niveau peu importe, l'important c'est de partager la course !",
-        replies: 3,
-        archived: false,
-        satisfied: false
-    },
-    {
-        id: 2,
-        author: "Mathilde_80",
-        date: "29/09/2026 à 18:47",
-        title: "Coéquipier pour les entraînements du mardi soir",
-        body: "Bonjour à tous, je cherche un coéquipier pour les entraînements du mardi soir. Je suis motivée et ouverte à tous les niveaux !",
-        replies: 5,
-        archived: false,
-        satisfied: false
-    },
-    {
-        id: 3,
-        author: "ThomasC",
-        date: "28/09/2026 à 20:15",
-        title: "Conseil sur les chaussures de running",
-        body: "Salut, vous auriez des conseils sur des chaussures adaptées pour l'asphalte et les sorties longues ? Je cours surtout 10 et 15 km.",
-        replies: 7,
-        archived: false,
-        satisfied: false
-    },
-    {
-        id: 4,
-        author: "Sarah_19",
-        date: "27/09/2026 à 12:32",
-        title: "Sortie dimanche matin",
-        body: "Je propose une sortie collective dimanche matin à 9h au parc St-Pierre. Départ depuis le club, tout le monde est le bienvenu !",
-        replies: 4,
-        archived: false,
-        satisfied: false
-    },
-    {
-        id: 5,
-        author: "AlexFit",
-        date: "26/09/2026 à 16:10",
-        title: "Plan d'entraînement marathon",
-        body: "Bonjour, est-ce que quelqu'un aurait un plan d'entraînement pour préparer un marathon ? Merci d'avance pour vos retours !",
-        replies: 2,
-        archived: false,
-        satisfied: false
-    },
-    {
-        id: 6,
-        author: "JulieA",
-        date: "25/09/2026 à 09:18",
-        title: "Merci pour vos conseils de récupération",
-        body: "Merci pour vos réponses, elles m'ont beaucoup aidée à organiser ma récupération après les sorties longues.",
-        replies: 6,
-        archived: true,
-        satisfied: true,
-        archiveReason: "satisfaction",
-        archivedAt: "25/09/2026"
-    },
-    {
-        id: 7,
-        author: "Nico80",
-        date: "24/09/2026 à 19:05",
-        title: "Quel parcours pour une sortie de 12 km ?",
-        body: "Je cherchais un parcours tranquille autour d'Amiens. Merci à tous pour les idées partagées !",
-        replies: 4,
-        archived: true,
-        satisfied: false,
-        archiveReason: "admin",
-        archivedAt: "25/09/2026"
-    },
-    {
-        id: 8,
-        author: "CamilleP",
-        date: "23/09/2026 à 11:42",
-        title: "Débuter le fractionné",
-        body: "J'ai reçu plusieurs conseils pour ma première séance de fractionné, merci pour votre aide.",
-        replies: 8,
-        archived: true,
-        satisfied: true,
-        archiveReason: "satisfaction",
-        archivedAt: "24/09/2026"
-    },
-    {
-        id: 9,
-        author: "MarcD",
-        date: "22/09/2026 à 17:26",
-        title: "Covoiturage pour la course de dimanche",
-        body: "La question est réglée, merci aux membres qui ont proposé une place en voiture.",
-        replies: 2,
-        archived: true,
-        satisfied: false,
-        archiveReason: "admin",
-        archivedAt: "23/09/2026"
-    }
-];
+// Import des fonctions permettant de lire les données de la page et d'envoyer des requêtes AJAX.
+import {getData} from "/composant/fonction/page.js";
+import {appelAjax} from "/composant/fonction/ajax.js";
+import {confirmer} from "/composant/fonction/afficher.js";
 
-const openQuestions = document.getElementById("openQuestions");
-const archivedQuestions = document.getElementById("archivedQuestions");
-const openEmpty = document.getElementById("openEmpty");
-const historyEmpty = document.getElementById("historyEmpty");
-const historyFilter = document.getElementById("historyFilter");
-const historySearch = document.getElementById("historySearch");
-const toast = document.getElementById("forumToast");
-let toastTimer;
-let questions = loadQuestions();
+// Récupère les discussions, l'identifiant du membre et les options d'affichage.
+const discussions = getData("lesDiscussions");
+const idMembre = Number(getData("idMembre"));
+const estAdministrateur = getData("estAdministrateur");
+const repertoirePhoto = getData("repertoirePhoto");
 
-function loadQuestions() {
-    const savedQuestions = localStorage.getItem(storageKey);
-    const loadedQuestions = savedQuestions === null
-        ? initialQuestions.map(question => ({ ...question }))
-        : JSON.parse(savedQuestions);
+// Récupère les éléments HTML utilisés pour afficher le forum et ses actions.
+const liste = document.getElementById("discussionList");
+const filtre = document.getElementById("questionFilter");
+const vide = document.getElementById("discussionEmpty");
+const formulaireQuestion = document.getElementById("questionForm");
+const lienAdministration = document.getElementById("forumAdminLink");
 
-    for (const question of loadedQuestions) {
-        if (question.satisfied && !question.archived) {
-            question.archived = true;
-            question.archiveReason = "satisfaction";
-            question.archivedAt = new Date().toLocaleDateString("fr-FR");
-        }
-    }
-    return loadedQuestions;
+// Affiche le lien d'administration uniquement aux administrateurs.
+lienAdministration.hidden = !estAdministrateur;
+
+// Masque le filtre des discussions archivées aux membres ordinaires.
+if (!estAdministrateur) {
+    filtre.querySelector('option[value="archived"]').remove();
 }
 
-function saveQuestions() {
-    localStorage.setItem(storageKey, JSON.stringify(questions));
-}
-
-function element(tagName, className, text) {
-    const node = document.createElement(tagName);
-    if (className) {
-        node.className = className;
-    }
-    if (text !== undefined) {
-        node.textContent = text;
-    }
+// Crée un élément HTML avec sa classe CSS et son contenu optionnel.
+function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
     return node;
 }
 
-function createQuestionCard(question, archived) {
-    const card = element("article", `forum-question${archived ? " forum-question--history" : ""}`);
-    const avatar = element("span", "forum-avatar", archived ? "☏" : question.author.slice(0, 1).toUpperCase());
+// Crée un bouton d'action relié à une discussion.
+function bouton(label, action, id) {
+    const node = element("button", "member-forum__action", label);
+    node.type = "button";
+    node.dataset.action = action;
+    node.dataset.questionId = String(id);
+    return node;
+}
+
+// Construit la carte complète d'une discussion avec son auteur, ses réponses et ses actions.
+function afficherDiscussion(discussion) {
+    const card = element("article", "member-forum__discussion");
+    const question = element("div", "member-forum__question");
+
+    // Affiche la première lettre du nom puis remplace éventuellement ce texte par la photo du membre.
+    const avatar = element("span", "member-forum__avatar", discussion.auteur.slice(0, 1).toUpperCase());
     avatar.setAttribute("aria-hidden", "true");
-
-    const content = element("div", "forum-question__content");
-    const meta = element("div", "forum-question__meta");
-    meta.append(
-        element("span", "forum-question__author", question.author),
-        element("span", "forum-question__date", `Posté le ${question.date}`)
-    );
-
-    const title = element("h3", "forum-question__title", question.title);
-    const body = element("p", "forum-question__body", question.body);
-    const footer = element("div", "forum-question__footer");
-    footer.append(element("span", "forum-question__replies", `▣ ${question.replies} réponse${question.replies > 1 ? "s" : ""}`));
-
-    if (archived) {
-        const reason = question.archiveReason === "satisfaction"
-            ? "Réponse satisfaisante"
-            : "Archivée par l'administration";
-        footer.append(element("span", "forum-badge", `✓ ${reason}`));
-        footer.append(element("span", "", `Archivée le ${question.archivedAt || "—"}`));
+    if (discussion.photoAuteur) {
+        const photo = element("img", "member-forum__avatar-image");
+        photo.src = `${repertoirePhoto}/${encodeURIComponent(discussion.photoAuteur)}`;
+        photo.alt = "";
+        photo.onerror = () => photo.remove();
+        avatar.append(photo);
     }
 
-    content.append(meta, title, body, footer);
-
-    const action = element(
-        "button",
-        `forum-question__action${archived ? " forum-question__action--restore" : ""}`,
-        archived ? "↶ Restaurer" : "▣ Archiver"
+    // Ajoute les informations principales de la discussion.
+    const content = element("div");
+    const meta = element("div", "member-forum__meta");
+    meta.append(
+        element("span", "member-forum__author", discussion.auteur),
+        element("span", "", `Le ${discussion.dateQuestion}`)
     );
-    action.type = "button";
-    action.dataset.questionId = String(question.id);
-    action.dataset.action = archived ? "restore" : "archive";
-    action.setAttribute("aria-label", `${archived ? "Restaurer" : "Archiver"} la question : ${question.title}`);
+    content.append(meta, element("h3", "member-forum__title", discussion.titre));
 
-    card.append(avatar, content, action);
+    // Limite l'aperçu à 180 caractères et ajoute un bouton pour lire la suite.
+    const longueurApercu = 180;
+    const contenuQuestion = Array.from(discussion.question);
+    const apercu = contenuQuestion.slice(0, longueurApercu).join("").trimEnd();
+    content.append(element("p", "member-forum__content",
+        contenuQuestion.length > longueurApercu ? `${apercu}…` : apercu));
+    if (contenuQuestion.length > longueurApercu) {
+        const suite = element("details", "member-forum__more");
+        suite.append(
+            element("summary", "", "Lire la suite"),
+            element("p", "member-forum__content",
+                contenuQuestion.slice(longueurApercu).join("").trimStart())
+        );
+        content.append(suite);
+    }
+
+    // Affiche le nombre de réponses publiées.
+    const statistiques = element("div", "member-forum__stats");
+    const nbReponses = discussion.reponses.length;
+    statistiques.append(element("span", "", `${nbReponses} réponse${nbReponses > 1 ? "s" : ""}`));
+    content.append(statistiques);
+
+    // Indique si la discussion est archivée ou si une réponse a été validée.
+    if (discussion.archive) {
+        content.append(element("span", "member-forum__status",
+            discussion.satisfaite ? "✓ Réponse satisfaisante" : "Discussion archivée"));
+    }
+
+    // Ajoute les actions réservées aux administrateurs.
+    if (estAdministrateur) {
+        const actions = element("div", "member-forum__actions");
+        const toggle = bouton(
+            discussion.archive ? "↶ Restaurer" : "▣ Archiver",
+            discussion.archive ? "restore" : "archive",
+            discussion.id
+        );
+        toggle.classList.add("member-forum__action--moderation");
+        actions.append(toggle);
+        const remove = bouton("Supprimer", "delete", discussion.id);
+        remove.classList.add("member-forum__action--delete");
+        actions.append(remove);
+        content.append(actions);
+    }
+
+    // Permet à l'auteur de valider une réponse lorsqu'au moins une réponse existe.
+    if (!discussion.archive && discussion.idAuteur === idMembre) {
+        const actions = element("div", "member-forum__actions");
+        const close = bouton("✓ J'ai obtenu ma réponse", "satisfied", discussion.id);
+        close.disabled = discussion.reponses.length === 0;
+        if (close.disabled) close.title = "Une réponse doit d'abord être publiée.";
+        actions.append(close);
+        content.append(actions);
+    }
+    question.append(avatar, content);
+    card.append(question);
+
+    // Affiche les réponses existantes et le formulaire de réponse si la discussion est ouverte.
+    if (discussion.reponses.length > 0 || !discussion.archive) {
+        const replies = element("div", "member-forum__replies");
+        for (const reponse of discussion.reponses) {
+            const reply = element("article", "member-forum__reply");
+            const replyMeta = element("div", "member-forum__reply-meta");
+            replyMeta.append(
+                element("strong", "member-forum__author", reponse.auteur),
+                element("span", "", `Le ${reponse.date}`)
+            );
+            reply.append(replyMeta, element("p", "member-forum__reply-text", reponse.contenu));
+            replies.append(reply);
+        }
+        if (!discussion.archive) {
+            const form = element("form", "member-forum__reply-form");
+            form.dataset.questionId = String(discussion.id);
+            const input = element("textarea");
+            input.name = "contenu";
+            input.rows = 2;
+            input.minLength = 2;
+            input.maxLength = 5000;
+            input.placeholder = "Écrire une réponse…";
+            input.required = true;
+            const submit = element("button", "member-forum__button", "Répondre");
+            submit.type = "submit";
+            form.append(input, submit);
+            replies.append(form);
+        }
+        card.append(replies);
+    }
     return card;
 }
 
-function render() {
-    const active = questions.filter(question => !question.archived);
-    const archived = questions.filter(question => question.archived);
-    const search = historySearch.value.trim().toLocaleLowerCase("fr");
-    const filter = historyFilter.value;
-    const visibleArchived = archived.filter(question => {
-        const matchesFilter = filter === "all" || question.archiveReason === filter;
-        const searchableText = `${question.author} ${question.title} ${question.body}`.toLocaleLowerCase("fr");
-        return matchesFilter && searchableText.includes(search);
+// Filtre les discussions selon le filtre sélectionné, puis met à jour la liste.
+function afficherLesDiscussions() {
+    const visibles = discussions.filter(discussion => {
+        if (filtre.value === "open") return !discussion.archive;
+        if (filtre.value === "archived") return discussion.archive;
+        return true;
     });
-
-    openQuestions.replaceChildren(...active.map(question => createQuestionCard(question, false)));
-    archivedQuestions.replaceChildren(...visibleArchived.map(question => createQuestionCard(question, true)));
-    openEmpty.hidden = active.length > 0;
-    historyEmpty.hidden = visibleArchived.length > 0;
-    document.getElementById("openCount").textContent = String(active.length);
-    document.getElementById("archivedCount").textContent = String(archived.length);
-    document.getElementById("openPanelCount").textContent = String(active.length);
+    // Remplace toutes les cartes affichées par celles correspondant au filtre.
+    liste.replaceChildren(...visibles.map(afficherDiscussion));
+    // Affiche le message vide uniquement lorsqu'aucune discussion ne correspond.
+    vide.hidden = visibles.length > 0;
 }
 
-function showToast(message) {
-    toast.textContent = message;
-    toast.classList.add("is-visible");
-    window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 2800);
-}
-
-function archiveQuestion(question, reason) {
-    question.archived = true;
-    question.satisfied = reason === "satisfaction";
-    question.archiveReason = reason;
-    question.archivedAt = new Date().toLocaleDateString("fr-FR");
-}
-
-document.addEventListener("click", event => {
-    const button = event.target.closest("button[data-question-id]");
-    if (!button) {
-        return;
-    }
-
-    const question = questions.find(item => String(item.id) === button.dataset.questionId);
-    if (!question) {
-        return;
-    }
-
-    if (button.dataset.action === "archive") {
-        archiveQuestion(question, "admin");
-        showToast("La discussion a été archivée.");
-    } else {
-        question.archived = false;
-        question.satisfied = false;
-        question.archiveReason = null;
-        question.archivedAt = null;
-        showToast("La discussion a été restaurée.");
-    }
-    saveQuestions();
-    render();
+// Envoie une nouvelle question au serveur lors de la soumission du formulaire principal.
+formulaireQuestion.addEventListener("submit", async event => {
+    event.preventDefault();
+    const form = new FormData(formulaireQuestion);
+    const reponse = await appelAjax({
+        url: "/membre/forum/ajax/poserQuestion.php",
+        data: {titre: form.get("titre"), contenu: form.get("contenu")}
+    });
+    if (reponse) window.location.reload();
 });
 
-historyFilter.addEventListener("change", render);
-historySearch.addEventListener("input", render);
-
-document.addEventListener("forum:reponse-satisfaite", event => {
-    const { questionId } = event.detail || {};
-    const question = questions.find(item => String(item.id) === String(questionId));
-    if (!question) {
-        return;
-    }
-    archiveQuestion(question, "satisfaction");
-    saveQuestions();
-    render();
-    showToast("La réponse a été validée : la discussion est archivée automatiquement.");
+// Envoie une réponse lorsqu'un formulaire de réponse contenu dans la liste est soumis.
+liste.addEventListener("submit", async event => {
+    const form = event.target.closest("form[data-question-id]");
+    if (!form) return;
+    event.preventDefault();
+    const contenu = new FormData(form).get("contenu");
+    const reponse = await appelAjax({
+        url: "/membre/forum/ajax/repondre.php",
+        data: {idQuestion: form.dataset.questionId, contenu}
+    });
+    if (reponse) window.location.reload();
 });
 
-saveQuestions();
-render();
+// Gère les actions de validation, d'archivage, de restauration et de suppression.
+liste.addEventListener("click", async event => {
+    const button = event.target.closest("button[data-action]");
+    if (!button) return;
+
+    const action = button.dataset.action;
+    const executeAction = async () => {
+        if (action === "satisfied") {
+            const reponse = await appelAjax({
+                url: "/membre/forum/ajax/marquerSatisfaite.php",
+                data: {idQuestion: button.dataset.questionId}
+            });
+            if (reponse) window.location.reload();
+            return;
+        }
+
+        if (!["archive", "restore", "delete"].includes(action)) return;
+        const reponse = await appelAjax({
+            url: action === "delete"
+                ? "/administration/forum/ajax/supprimer.php"
+                : "/administration/forum/ajax/archiver.php",
+            data: action === "delete"
+                ? {idQuestion: button.dataset.questionId}
+                : {idQuestion: button.dataset.questionId, archive: action === "archive" ? "1" : "0"}
+        });
+        if (reponse) window.location.reload();
+    };
+
+    if (action === "satisfied") {
+        confirmer(executeAction, "Confirmez-vous que la réponse vous satisfait ? La discussion sera archivée.");
+        return;
+    }
+    if (action === "delete") {
+        confirmer(executeAction, "Supprimer définitivement cette discussion et toutes ses réponses ?");
+        return;
+    }
+    executeAction();
+});
+
+// Met à jour la liste dès que le filtre change, puis affiche toutes les discussions au chargement.
+filtre.addEventListener("change", afficherLesDiscussions);
+afficherLesDiscussions();

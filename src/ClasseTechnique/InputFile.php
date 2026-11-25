@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace ClasseTechnique;
@@ -10,8 +9,8 @@ namespace ClasseTechnique;
  * Vérifie un fichier reçu avant son traitement.
  *
  * @author Guy Verghote
- * @version 2026.3
- * @date    08/10/2026
+ * @version 2026.4
+ * @date    26/10/2026
  */
 class InputFile extends Input
 {
@@ -42,7 +41,6 @@ class InputFile extends Input
             $this->maxSize = max(0, ((int)$lesParametres['maxSize']));
         }
 
-
         if (isset($lesParametres['lesExtensions']) && is_array($lesParametres['lesExtensions'])) {
             $this->lesExtensions = array_map('strtolower', $lesParametres['lesExtensions']);
         }
@@ -50,7 +48,6 @@ class InputFile extends Input
         if (isset($lesParametres['lesTypes']) && is_array($lesParametres['lesTypes'])) {
             $this->lesTypes = array_map('strtolower', $lesParametres['lesTypes']);
         }
-
         return $this;
     }
 
@@ -116,10 +113,7 @@ class InputFile extends Input
         if ($finfo === false) {
             return '';
         }
-
         $mime = finfo_file($finfo, $this->getTmpName());
-        finfo_close($finfo);
-
         return $mime === false ? '' : strtolower($mime);
     }
 
@@ -128,7 +122,6 @@ class InputFile extends Input
      */
     public function checkValidity(): bool
     {
-
         if (!$this->verifierTeleversement()) {
             return false;
         }
@@ -152,8 +145,6 @@ class InputFile extends Input
         if (!$this->preparerNomFichier()) {
             return false;
         }
-
-
         return true;
     }
 
@@ -175,7 +166,6 @@ class InputFile extends Input
                 $this->validationMessage = "Aucun fichier n'a été téléversé.";
                 return false;
             }
-
             return true;
         }
 
@@ -194,8 +184,6 @@ class InputFile extends Input
             $this->validationMessage = "Le fichier n'est pas un fichier téléversé valide.";
             return false;
         }
-
-
         return true;
     }
 
@@ -224,9 +212,7 @@ class InputFile extends Input
         if ($this->maxSize === 0 || $this->getSize() <= $this->maxSize) {
             return true;
         }
-
         $this->validationMessage = "La taille du fichier (" . $this->getSize() . " octets) dépasse la taille autorisée (" . $this->maxSize . " octets).";
-
         return false;
     }
 
@@ -236,13 +222,10 @@ class InputFile extends Input
     protected function verifierExtension(): bool
     {
         $extension = $this->getExtension();
-
         if (in_array($extension, $this->lesExtensions, true)) {
             return true;
         }
-
         $this->validationMessage = "L'extension .$extension n'est pas autorisée.";
-
         return false;
     }
 
@@ -252,13 +235,10 @@ class InputFile extends Input
     protected function verifierTypeMime(): bool
     {
         $mime = $this->getMimeType();
-
         if (in_array($mime, $this->lesTypes, true)) {
             return true;
         }
-
         $this->validationMessage = "Le type MIME '$mime' n'est pas autorisé.";
-
         return false;
     }
 
@@ -290,11 +270,7 @@ class InputFile extends Input
     {
         // Méthode principale : extension Intl.
         if (class_exists(\Transliterator::class)) {
-            $resultat = transliterator_transliterate(
-                'Any-Latin; Latin-ASCII',
-                $nom
-            );
-
+            $resultat = transliterator_transliterate('Any-Latin; Latin-ASCII', $nom);
             if ($resultat !== false) {
                 return $resultat;
             }
@@ -302,7 +278,6 @@ class InputFile extends Input
 
         // Méthode de secours : iconv.
         $resultat = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nom);
-
         if ($resultat !== false) {
             return $resultat;
         }
@@ -336,7 +311,6 @@ class InputFile extends Input
             'Ž' => 'Z', 'ž' => 'z',
         ]);
     }
-
 
     /**
      * Nettoie le nom : le nom de base ne conserve que [a-z0-9_-] (espaces remplacés par _),

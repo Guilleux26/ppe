@@ -8,8 +8,8 @@ delete from fonction;
 insert into fonction (repertoire, nom)
 values
     ('epreuve', '📅 4 saisons'),
+    ('forum', '💬 Forum'),
     ('membre', '👥 Membres'),
     ('photoinformation', '🖼️ Photos');
 
 set foreign_key_checks = 1;
-

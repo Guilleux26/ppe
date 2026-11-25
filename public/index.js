@@ -1,36 +1,18 @@
 "use strict";
 
-// -----------------------------------------------------------------------------------
-// Import des fonctions nécessaires
-// -----------------------------------------------------------------------------------
-
+// Import de la fonction permettant de lire les données transmises à la page.
 import {getData} from "/composant/fonction/page.js";
+
+// Import de la fonction permettant d'initialiser les cartes ouvertes ou fermées.
 import {initialiserToutesLesCartes} from "/composant/fonction/openclose.js";
 
-// -----------------------------------------------------------------------------------
-// Déclaration des variables globales
-// -----------------------------------------------------------------------------------
-
-// récupération des données transmises à l'interface
+// Récupère les informations de la prochaine épreuve depuis la page.
 const laProchaineEpreuve = getData("laProchaineEpreuve");
 
-
-// Récupération des éléments de l'interface
-
-// -----------------------------------------------------------------------------------
-// Procédures évènementielles
-// -----------------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------------
-// Programme principal
-// -----------------------------------------------------------------------------------
-
-// affichage de la prochaine épreuve
-// Convertit la chaîne ou le timestamp en objet Date
+// Convertit la date reçue en objet JavaScript afin de pouvoir la formater.
 const dateObj = new Date(laProchaineEpreuve.date);
 
-// Option 1 : Format long complet avec le jour de la semaine (ex: "dimanche 12 octobre 2026")
+// Formate la date en français avec le jour de la semaine, le jour, le mois et l'année.
 const dateFormatee = dateObj.toLocaleDateString('fr-FR', {
     weekday: 'long',
     day: 'numeric',
@@ -38,17 +20,9 @@ const dateFormatee = dateObj.toLocaleDateString('fr-FR', {
     year: 'numeric'
 });
 
-// Injection dans l'élément HTML
+// Affiche la date formatée dans l'élément prévu pour la prochaine épreuve.
 document.getElementById("dateEpreuve").innerText = dateFormatee;
 
-
-
+// Initialise le comportement d'ouverture et de fermeture de toutes les cartes.
 initialiserToutesLesCartes();
-
-
-
-
-
-
-
 

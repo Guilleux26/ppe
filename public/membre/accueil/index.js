@@ -46,7 +46,9 @@ if (lesFonctions && lesFonctions.length > 0) {
         const a = document.createElement("a");
         a.className = "admin-fonctions-link";
         a.href = "/administration/" + element.repertoire;
-        a.textContent = element.nom;
+        a.textContent = element.repertoire === "forum" && !element.nom.startsWith("💬")
+            ? `💬 ${element.nom}`
+            : element.nom;
 
         li.appendChild(a);
         ul.appendChild(li);
@@ -56,6 +58,5 @@ if (lesFonctions && lesFonctions.length > 0) {
 } else {
     mesFonctions.style.display = "none";
 }
-
 
 

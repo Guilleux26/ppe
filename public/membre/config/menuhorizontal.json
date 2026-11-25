@@ -14,6 +14,10 @@
       "href": "/membre/annuaire"
     },
     {
+      "label": "💬 Forum",
+      "href": "/membre/forum"
+    },
+    {
       "label": "\uD83D\uDC64 Mon profil",
       "href": "/membre/profil"
     },
