@@ -29,12 +29,23 @@ final class Forum
     /**
      * Récupère les discussions et regroupe leurs réponses par question.
      *
-     * @param bool $inclureArchivees Indique si les discussions archivées doivent être incluses.
+     * @param bool $inclureArchivees Indique si toutes les discussions archivées doivent être incluses.
+     * @param bool $inclureSatisfaites Indique si les discussions clôturées comme satisfaites doivent être incluses.
      * @return list<array<string, mixed>>
      */
-    public static function getLesDiscussions(bool $inclureArchivees = false): array
+    public static function getLesDiscussions(
+        bool $inclureArchivees = false,
+        bool $inclureSatisfaites = false
+    ): array
     {
         $db = Database::getInstance();
+        if ($inclureArchivees) {
+            $conditionArchive = '';
+        } elseif ($inclureSatisfaites) {
+            $conditionArchive = 'where q.archive = 0 or q.satisfaite = 1';
+        } else {
+            $conditionArchive = 'where q.archive = 0';
+        }
         $sql = <<<SQL
             select q.id as idQuestion, q.idMembre as idAuteur, q.titre,
                    q.contenu as question,
@@ -49,11 +60,11 @@ final class Forum
                 join membre m on m.id = q.idMembre
                 left join forum_reponse r on r.idQuestion = q.id
                 left join membre mr on mr.id = r.idMembre
-            where (:inclureArchivees = 1 or q.archive = 0)
+            $conditionArchive
             order by q.dateCreation desc, r.dateCreation
         SQL;
         $statement = $db->prepare($sql);
-        $statement->execute(['inclureArchivees' => $inclureArchivees ? 1 : 0]);
+        $statement->execute();
         $discussions = [];
 
         while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {

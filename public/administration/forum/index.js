@@ -1,15 +1,87 @@
 "use strict";
 
+// -----------------------------------------------------------------------------------
+// Import des fonctions nécessaires
+// -----------------------------------------------------------------------------------
+
 import {getData} from "/composant/fonction/page.js";
 import {appelAjax} from "/composant/fonction/ajax.js";
+import {confirmer, messageBox} from "/composant/fonction/afficher.js";
 
+// -----------------------------------------------------------------------------------
+// Déclaration des variables globales
+// -----------------------------------------------------------------------------------
+
+// Discussions et chemin des photos transmis par la page d'administration.
 const discussions = getData("lesDiscussions");
 const repertoirePhoto = getData("repertoirePhoto");
+
+// Éléments HTML de la liste, des filtres, de la recherche et du message d'état vide.
 const liste = document.getElementById("adminDiscussionList");
 const filtre = document.getElementById("forumFilter");
 const recherche = document.getElementById("forumSearch");
 const vide = document.getElementById("adminDiscussionEmpty");
 
+// -----------------------------------------------------------------------------------
+// Procédures évènementielles
+// -----------------------------------------------------------------------------------
+
+// Délégation d'événement pour archiver, restaurer ou supprimer une discussion.
+async function traiterActionDiscussion(event) {
+    const button = event.target.closest("button[data-action]");
+    if (!button) return;
+    const {action, questionId} = button.dataset;
+
+    if (action === "delete") {
+        confirmer(
+            () => executerActionDiscussion(action, questionId),
+            "Supprimer définitivement cette discussion et toutes ses réponses ?"
+        );
+        return;
+    }
+
+    await executerActionDiscussion(action, questionId);
+}
+
+async function executerActionDiscussion(action, questionId) {
+    const url = action === "delete"
+        ? "/administration/forum/ajax/supprimer.php"
+        : "/administration/forum/ajax/archiver.php";
+    const reponse = await appelAjax({
+        url,
+        data: action === "delete"
+            ? {idQuestion: questionId}
+            : {idQuestion: questionId, archive: action === "archive" ? "1" : "0"}
+    });
+    if (reponse) {
+        const typeMessage = action === "archive" ? "warning"
+            : action === "restore" ? "info"
+                : "success";
+        const message = action === "delete"
+            ? "La discussion et ses réponses ont été supprimées."
+            : reponse.message;
+        afficherMessagePuisRecharger(message, typeMessage);
+    }
+}
+
+// -----------------------------------------------------------------------------------
+// Fonctions de traitement
+// -----------------------------------------------------------------------------------
+
+// Affiche la confirmation et actualise la liste quand l'utilisateur ferme la boîte de dialogue.
+function afficherMessagePuisRecharger(message, type) {
+    messageBox(message, type);
+
+    const observer = new MutationObserver(() => {
+        if (!document.getElementById("avertir-modal")) {
+            observer.disconnect();
+            window.location.reload();
+        }
+    });
+    observer.observe(document.body, {childList: true, subtree: true});
+}
+
+// Crée un élément et ajoute son texte sans l'interpréter comme du HTML.
 function element(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -17,9 +89,11 @@ function element(tag, className, text) {
     return node;
 }
 
+// Construit une carte d'administration avec les réponses et les actions de modération.
 function afficherDiscussion(discussion) {
     const card = element("article", "member-forum__discussion");
     const question = element("div", "member-forum__question");
+    // Affiche une initiale par défaut, remplacée par la photo si elle est disponible.
     const avatar = element("span", "member-forum__avatar", discussion.auteur.slice(0, 1).toUpperCase());
     avatar.setAttribute("aria-hidden", "true");
     if (discussion.photoAuteur) {
@@ -29,6 +103,7 @@ function afficherDiscussion(discussion) {
         photo.onerror = () => photo.remove();
         avatar.append(photo);
     }
+
     const content = element("div");
     const meta = element("div", "member-forum__meta");
     meta.append(
@@ -36,20 +111,28 @@ function afficherDiscussion(discussion) {
         element("span", "", `Le ${discussion.dateQuestion}`)
     );
     content.append(meta, element("h2", "member-forum__title", discussion.titre));
+
+    // Affiche un aperçu de 180 caractères et permet de développer le texte complet.
     const longueurApercu = 180;
     const contenuQuestion = Array.from(discussion.question);
     const apercu = contenuQuestion.slice(0, longueurApercu).join("").trimEnd();
-    content.append(element("p", "member-forum__content",
-        contenuQuestion.length > longueurApercu ? `${apercu}…` : apercu));
+    const description = element("p", "member-forum__content",
+        contenuQuestion.length > longueurApercu ? `${apercu}…` : apercu);
+    content.append(description);
     if (contenuQuestion.length > longueurApercu) {
-        const suite = element("details", "member-forum__more");
-        suite.append(
-            element("summary", "", "Lire la suite"),
-            element("p", "member-forum__content",
-                contenuQuestion.slice(longueurApercu).join("").trimStart())
-        );
-        content.append(suite);
+        const boutonDescription = element("button", "member-forum__more-toggle", "▸ Afficher plus");
+        let estDeveloppee = false;
+        boutonDescription.type = "button";
+        boutonDescription.addEventListener("click", () => {
+            estDeveloppee = !estDeveloppee;
+            description.textContent = estDeveloppee
+                ? `${apercu}…`
+                : discussion.question;
+            boutonDescription.textContent = estDeveloppee ? "▸ Afficher plus" : "▾ Afficher moins";
+        });
+        content.append(boutonDescription);
     }
+
     const statistiques = element("div", "member-forum__stats");
     const nbReponses = discussion.reponses.length;
     statistiques.append(element("span", "", `${nbReponses} réponse${nbReponses > 1 ? "s" : ""}`));
@@ -94,6 +177,7 @@ function afficherDiscussion(discussion) {
     return card;
 }
 
+// Combine le filtre d'état et le texte recherché, puis met à jour la liste des discussions.
 function afficherLesDiscussions() {
     const term = recherche.value.trim().toLocaleLowerCase("fr");
     const visibles = discussions.filter(discussion => {
@@ -106,28 +190,16 @@ function afficherLesDiscussions() {
     vide.hidden = visibles.length > 0;
 }
 
-liste.addEventListener("click", async event => {
-    const button = event.target.closest("button[data-action]");
-    if (!button) return;
-    const {action, questionId} = button.dataset;
+// -----------------------------------------------------------------------------------
+// Programme principal
+// -----------------------------------------------------------------------------------
 
-    if (action === "delete"
-        && !window.confirm("Supprimer définitivement cette discussion et toutes ses réponses ?")) {
-        return;
-    }
+// Branche les interactions de modération, les filtres et la recherche en direct.
+function initialiserForumAdministration() {
+    liste.addEventListener("click", traiterActionDiscussion);
+    filtre.addEventListener("change", afficherLesDiscussions);
+    recherche.addEventListener("input", afficherLesDiscussions);
+    afficherLesDiscussions();
+}
 
-    const url = action === "delete"
-        ? "/administration/forum/ajax/supprimer.php"
-        : "/administration/forum/ajax/archiver.php";
-    const reponse = await appelAjax({
-        url,
-        data: action === "delete"
-            ? {idQuestion: questionId}
-            : {idQuestion: questionId, archive: action === "archive" ? "1" : "0"}
-    });
-    if (reponse) window.location.reload();
-});
-
-filtre.addEventListener("change", afficherLesDiscussions);
-recherche.addEventListener("input", afficherLesDiscussions);
-afficherLesDiscussions();
+initialiserForumAdministration();

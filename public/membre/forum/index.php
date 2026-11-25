@@ -9,12 +9,12 @@ use ClasseTechnique\Page;
 require $_SERVER['DOCUMENT_ROOT'] . "/../bootstrap/bootstrap.php";
 
 $idMembre = (int) $_SESSION['membre']['id'];
-$estAdministrateur = (bool) Administrateur::estUnAdministrateur($idMembre);
+$estAdministrateur = Administrateur::peutAdministrer($idMembre, 'forum');
 $repertoirePhoto = substr(DOSSIER_PHOTO_MEMBRE, strlen(DOSSIER_WWW));
 
 $page = new Page();
 $page->setTitre("Forum des membres")
-    ->setDonnee('lesDiscussions', Forum::getLesDiscussions($estAdministrateur))
+    ->setDonnee('lesDiscussions', Forum::getLesDiscussions($estAdministrateur, !$estAdministrateur))
     ->setDonnee('idMembre', $idMembre)
     ->setDonnee('repertoirePhoto', $repertoirePhoto)
     ->setDonnee('estAdministrateur', $estAdministrateur)
